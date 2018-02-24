@@ -34,9 +34,10 @@ fi
 _upgrade_custom() {
   printf "${BLUE}%s${NORMAL}\n" "Upgrading custom plugins"
 
-  for d in $( cd "${ZSH_CUSTOM}"; find * -type d -depth 1 -not -name example )
+  find "${ZSH_CUSTOM}" -type d -name .git | while read d
   do
-    cd "${ZSH_CUSTOM}/${d}"
+    p=$(dirname "$d")
+    cd "${p}"
 
     if git pull --rebase --stat origin master
     then
