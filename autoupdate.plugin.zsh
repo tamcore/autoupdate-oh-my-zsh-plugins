@@ -1,4 +1,4 @@
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # self-update
 
 if which tput >/dev/null 2>&1; then
@@ -23,7 +23,6 @@ function _current_epoch() {
 
 function _update_zsh_custom_update() {
   echo "LAST_EPOCH=$(_current_epoch)" > ~/.zsh-custom-update
-  echo test
 }
 
 epoch_target=$UPDATE_ZSH_DAYS
@@ -31,8 +30,6 @@ if [[ -z "$epoch_target" ]]; then
   # Default to old behavior
   epoch_target=13
 fi
-
-. ~/.zsh-custom-update
 
 _upgrade_custom() {
   printf "${BLUE}%s${NORMAL}\n" "Upgrading custom plugins"
