@@ -31,7 +31,7 @@ if [[ -z "$epoch_target" ]]; then
   epoch_target=13
 fi
 
-_upgrade_custom() {
+function _upgrade_custom() {
   printf "${BLUE}%s${NORMAL}\n" "Upgrading custom plugins"
 
   find "${ZSH_CUSTOM}" -type d -name .git | while read d
@@ -76,3 +76,5 @@ then
 else
   _update_zsh_custom_update
 fi
+
+unset -f _update_zsh_custom_update _upgrade_custom _current_epoch
