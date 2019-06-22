@@ -22,7 +22,7 @@ function _current_epoch() {
 }
 
 function _update_zsh_custom_update() {
-  echo "LAST_EPOCH=$(_current_epoch)" > ~/.zsh-custom-update
+  echo "LAST_EPOCH=$(_current_epoch)" >! ~/.zsh-custom-update
 }
 
 epoch_target=$UPDATE_ZSH_DAYS
