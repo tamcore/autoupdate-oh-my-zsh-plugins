@@ -5,9 +5,9 @@ autoupdate-zsh-plugin
 
 ## Install
 
-Create a new directory in `~ZSH_CUSTOM/plugins` called `autoupdate` and clone this repo into that directory. Note: it must be named `autoupdate` or oh-my-zsh won't recognize that it is a valid plugin directory.
+Create a new directory in `$ZSH_CUSTOM/plugins` called `autoupdate` and clone this repo into that directory. Note: it must be named `autoupdate` or oh-my-zsh won't recognize that it is a valid plugin directory.
 ```
-git clone https://github.com/TamCore/autoupdate-oh-my-zsh-plugins ~ZSH_CUSTOM/plugins/autoupdate
+git clone https://github.com/TamCore/autoupdate-oh-my-zsh-plugins $ZSH_CUSTOM/plugins/autoupdate
 ```
 
 ## Usage
