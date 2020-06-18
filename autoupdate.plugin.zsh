@@ -32,7 +32,9 @@ if [[ -z "$epoch_target" ]]; then
 fi
 
 function _upgrade_custom() {
-  printf "${BLUE}%s${NORMAL}\n" "Upgrading custom plugins"
+  if [[ -z "$ZSH_CUSTOM_AUTOUPDATE_QUIET" ]]; then
+    printf "${BLUE}%s${NORMAL}\n" "Upgrading custom plugins"
+  fi
 
   find "${ZSH_CUSTOM}" -type d -name .git | while read d
   do
