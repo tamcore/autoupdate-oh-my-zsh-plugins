@@ -48,6 +48,9 @@ function upgrade_oh_my_zsh_custom() {
   done
 }
 
+alias upgrade_ohl_my_zsh='upgrade_oh_my_zsh && upgrade_oh_my_zsh_custom'
+
+
 if [ -f ~/.zsh-custom-update ]
 then
   mv ~/.zsh-custom-update "${ZSH_CACHE_DIR}/.zsh-custom-update"
