@@ -31,7 +31,7 @@ if [[ -z "$epoch_target" ]]; then
   epoch_target=13
 fi
 
-function _upgrade_custom() {
+function upgrade_oh_my_zsh_custom() {
   printf "${BLUE}%s${NORMAL}\n" "Upgrading custom plugins"
 
   find "${ZSH_CUSTOM}" -type d -name .git | while read d
@@ -67,13 +67,13 @@ then
   then
     if [ "$DISABLE_UPDATE_PROMPT" = "true" ]
     then
-      (_upgrade_custom)
+      (upgrade_oh_my_zsh_custom)
     else
       echo "[Oh My Zsh] Would you like to check for custom plugin updates? [Y/n]: \c"
       read line
       if [[ "$line" == Y* ]] || [[ "$line" == y* ]] || [ -z "$line" ]
       then
-        (_upgrade_custom)
+        (upgrade_oh_my_zsh_custom)
       fi
     fi
     _update_zsh_custom_update
@@ -82,4 +82,4 @@ else
   _update_zsh_custom_update
 fi
 
-unset -f _update_zsh_custom_update _upgrade_custom _current_epoch
+unset -f _update_zsh_custom_update _current_epoch
