@@ -39,7 +39,7 @@ function upgrade_oh_my_zsh_custom() {
   find "${ZSH_CUSTOM}" -type d -name .git | while read d
   do
     p=$(dirname "$d")
-    cd "${p}"
+    pushd -q "${p}"
 
     if git pull --rebase --stat origin master
     then
@@ -47,6 +47,7 @@ function upgrade_oh_my_zsh_custom() {
     else
       printf "${RED}%s${NORMAL}\n" 'There was an error updating. Try again later?'
     fi
+    popd -q
   done
 }
 
