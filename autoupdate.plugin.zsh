@@ -31,7 +31,7 @@ if [[ -z "$epoch_target" ]]; then
   epoch_target=13
 fi
 
-function _upgrade_custom() {
+function upgrade_oh_my_zsh_custom() {
   if [[ -z "$ZSH_CUSTOM_AUTOUPDATE_QUIET" ]]; then
     printf "${BLUE}%s${NORMAL}\n" "Upgrading custom plugins"
   fi
@@ -49,6 +49,9 @@ function _upgrade_custom() {
     fi
   done
 }
+
+alias upgrade_ohl_my_zsh='upgrade_oh_my_zsh && upgrade_oh_my_zsh_custom'
+
 
 if [ -f ~/.zsh-custom-update ]
 then
@@ -69,13 +72,13 @@ then
   then
     if [ "$DISABLE_UPDATE_PROMPT" = "true" ]
     then
-      (_upgrade_custom)
+      (upgrade_oh_my_zsh_custom)
     else
       echo "[Oh My Zsh] Would you like to check for custom plugin updates? [Y/n]: \c"
       read line
       if [[ "$line" == Y* ]] || [[ "$line" == y* ]] || [ -z "$line" ]
       then
-        (_upgrade_custom)
+        (upgrade_oh_my_zsh_custom)
       fi
     fi
     _update_zsh_custom_update
@@ -84,4 +87,4 @@ else
   _update_zsh_custom_update
 fi
 
-unset -f _update_zsh_custom_update _upgrade_custom _current_epoch
+unset -f _update_zsh_custom_update _current_epoch

@@ -27,6 +27,12 @@ Changed command: (checks daily for updates)
 export UPDATE_ZSH_DAYS=1
 ```
 
+Another possibility is to use the provided upgrade function, which one may call
+at any time using `upgrade_oh_my_zsh_custom`. There shouldn't be any difference
+with the automatic operation. Also, a convenient alias that calls the OhMyZsh
+update function `upgrade_oh_my_zsh` and then `upgrade_oh_my_zsh_custom`, called
+`update_ohl_my_zsh`, is available as well.
+
 ### Quiet mode
 
 To turn off the "Upgrading custom plugins" message (for example, if you're using [Powerlevel10k's instant prompt](https://github.com/romkatv/powerlevel10k#instant-prompt)), add this to your `~/.zshrc` file:
