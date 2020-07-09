@@ -43,9 +43,9 @@ function upgrade_oh_my_zsh_custom() {
 
     if git pull --rebase --stat origin master
     then
-      printf "${BLUE}%s${NORMAL}\n" "Hooray! $d has been updated and/or is at the current version."
+      printf "${BLUE}%s${NORMAL}\n" "Hooray! $p has been updated and/or is at the current version."
     else
-      printf "${RED}%s${NORMAL}\n" 'There was an error updating. Try again later?'
+      printf "${RED}%s${NORMAL}\n" "There was an error updating $p. Try again later?"
     fi
     popd -q
   done
