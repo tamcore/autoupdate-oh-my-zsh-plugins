@@ -14,6 +14,7 @@ git clone https://github.com/TamCore/autoupdate-oh-my-zsh-plugins $ZSH_CUSTOM/pl
 
 Add `autoupdate` to the `plugins=()` list in your `~/.zshrc` file and you're done.
 The updates will be executed automatically as soon as the oh-my-zsh updater is started.
+Note that this will autoupdate both plugins and also themes found in the $ZSH_CUSTOM folder.
 
 If you want to check for updates more often, you can adjust this line in the `~/.zshrc` file.
 Default command:
