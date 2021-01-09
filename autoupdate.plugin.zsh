@@ -40,13 +40,15 @@ function upgrade_oh_my_zsh_custom() {
   do
     p=$(dirname "$d")
     pn=$(basename "$p")
+    pt=$(dirname "$p")
+    pt=$(basename ${pt:0:((${#pt} - 1))})
     pushd -q "${p}"
 
     if git pull --rebase --stat origin master
     then
-      printf "${BLUE}%s${NORMAL}\n" "Hooray! $pn has been updated and/or is at the current version."
+      printf "${BLUE}%s${NORMAL}\n" "Hooray! the $pn $pt has been updated and/or is at the current version."
     else
-      printf "${RED}%s${NORMAL}\n" "There was an error updating $pn. Try again later?"
+      printf "${RED}%s${NORMAL}\n" "There was an error updating the $pn $pt. Try again later?"
     fi
     popd -q
   done
