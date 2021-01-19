@@ -50,7 +50,8 @@ function upgrade_oh_my_zsh_custom() {
     else
       printf "${RED}%s${NORMAL}\n" "There was an error updating the $pn $pt. Try again later?"
     fi
-    popd -q
+
+    popd &>/dev/null
   done
 }
 
