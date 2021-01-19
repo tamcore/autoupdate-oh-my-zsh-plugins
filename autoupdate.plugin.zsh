@@ -39,13 +39,16 @@ function upgrade_oh_my_zsh_custom() {
   find -L "${ZSH_CUSTOM}" -type d -name .git | while read d
   do
     p=$(dirname "$d")
+    pn=$(basename "$p")
+    pt=$(dirname "$p")
+    pt=$(basename ${pt:0:((${#pt} - 1))})
     pushd -q "${p}"
 
     if git pull --rebase --stat origin master
     then
-      printf "${BLUE}%s${NORMAL}\n" "Hooray! $p has been updated and/or is at the current version."
+      printf "${BLUE}%s${NORMAL}\n" "Hooray! the $pn $pt has been updated and/or is at the current version."
     else
-      printf "${RED}%s${NORMAL}\n" "There was an error updating $p. Try again later?"
+      printf "${RED}%s${NORMAL}\n" "There was an error updating the $pn $pt. Try again later?"
     fi
     popd -q
   done
