@@ -44,7 +44,7 @@ function upgrade_oh_my_zsh_custom() {
     pt=$(basename ${pt:0:((${#pt} - 1))})
     pushd -q "${p}"
 
-    if git pull --rebase --stat origin master
+    if git pull --rebase --stat
     then
       printf "${BLUE}%s${NORMAL}\n" "Hooray! the $pn $pt has been updated and/or is at the current version."
     else
