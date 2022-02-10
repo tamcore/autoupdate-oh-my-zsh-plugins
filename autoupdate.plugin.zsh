@@ -5,7 +5,7 @@ if which tput >/dev/null 2>&1; then
   ncolors=$(tput colors)
 fi
 
-if [ -t 1 ] && [ -n "$ncolors" ] && [ "$ncolors" -ge 8 ]; then
+if [[ $- == *i* ]] && [ -n "$ncolors" ] && [ "$ncolors" -ge 8 ]; then
   RED="$(tput setaf 1)"
   BLUE="$(tput setaf 4)"
   NORMAL="$(tput sgr0)"
