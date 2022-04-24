@@ -44,9 +44,16 @@ function upgrade_oh_my_zsh_custom() {
     pt=$(basename ${pt:0:((${#pt} - 1))})
     pushd -q "${p}"
 
+    last_head=$( git rev-parse HEAD )
     if git pull --rebase --stat --autostash
     then
-      printf "${BLUE}%s${NORMAL}\n" "Hooray! the $pn $pt has been updated and/or is at the current version."
+      curr_head=$( git rev-parse HEAD )
+      if [ "${last_head}" != "${curr_head}" ]
+      then
+        printf "${BLUE}%s${NORMAL}\n" "Hooray! the $pn $pt has been updated."
+      else
+        printf "${BLUE}%s${NORMAL}\n" "The $pn $pt was already at the latest version."
+      fi
     else
       printf "${RED}%s${NORMAL}\n" "There was an error updating the $pn $pt. Try again later?"
     fi
