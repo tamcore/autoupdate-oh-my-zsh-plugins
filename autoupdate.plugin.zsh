@@ -45,7 +45,7 @@ function upgrade_oh_my_zsh_custom() {
     pushd -q "${p}"
 
     last_head=$( git rev-parse HEAD )
-    if git pull --rebase --stat --autostash
+    if git pull --quiet --rebase --stat --autostash
     then
       curr_head=$( git rev-parse HEAD )
       if [ "${last_head}" != "${curr_head}" ]
