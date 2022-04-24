@@ -55,7 +55,7 @@ function upgrade_oh_my_zsh_custom() {
   done
 }
 
-alias upgrade_ohl_my_zsh='omz update && upgrade_oh_my_zsh_custom'
+alias upgrade_oh_my_zsh_all='omz update && upgrade_oh_my_zsh_custom'
 
 
 if [ -f ~/.zsh-custom-update ]
