@@ -33,7 +33,7 @@ fi
 
 function upgrade_oh_my_zsh_custom() {
   if [[ -z "$ZSH_CUSTOM_AUTOUPDATE_QUIET" ]]; then
-    printf "${BLUE}%s${NORMAL}\n" "Upgrading custom plugins"
+    printf "${BLUE}%s${NORMAL}\n" "Upgrading Custom Plugins"
   fi
 
   find -L "${ZSH_CUSTOM}" -type d -name .git | while read d
