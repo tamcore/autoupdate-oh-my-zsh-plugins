@@ -25,11 +25,20 @@ function _update_zsh_custom_update() {
   echo "LAST_EPOCH=$(_current_epoch)" >| "${ZSH_CACHE_DIR}/.zsh-custom-update"
 }
 
-epoch_target=$UPDATE_ZSH_DAYS
-if [[ -z "$epoch_target" ]]; then
-  # Default to old behavior
-  epoch_target=13
-fi
+function _get_epoch_target() {
+  local epoch_target
+
+  zstyle -g epoch_target ':omz:update' frequency \
+    || epoch_target="$UPDATE_ZSH_DAYS"
+  if [[ -z "$epoch_target" ]]; then
+    # Default to old behavior
+    epoch_target=13
+  fi
+
+  echo "$epoch_target"
+}
+
+epoch_target="$(_get_epoch_target)"
 
 function upgrade_oh_my_zsh_custom() {
   if [[ -z "$ZSH_CUSTOM_AUTOUPDATE_QUIET" ]]; then
@@ -70,7 +79,29 @@ then
   mv ~/.zsh-custom-update "${ZSH_CACHE_DIR}/.zsh-custom-update"
 fi
 
-if [ -f "${ZSH_CACHE_DIR}/.zsh-custom-update" ]
+function _dispatch_update_mode() {
+  local mode
+
+  zstyle -g mode ':omz:update' mode
+  if [[ -z "$mode" ]]; then
+    if [[ "$DISABLE_AUTO_UPDATE" == "true" ]]; then
+      mode="disabled"
+    elif [[ "$DISABLE_UPDATE_PROMPT" == "true" ]]; then
+      mode="auto"
+    else
+      mode="prompt"
+    fi
+  fi
+
+  echo "$mode"
+}
+
+update_mode="$(_dispatch_update_mode)"
+
+if [[ "$update_mode" == "disabled" ]]
+then
+  # No updates
+elif [ -f "${ZSH_CACHE_DIR}/.zsh-custom-update" ]
 then
   . "${ZSH_CACHE_DIR}/.zsh-custom-update"
 
@@ -82,11 +113,14 @@ then
   epoch_diff=$(($(_current_epoch) - $LAST_EPOCH))
   if [ $epoch_diff -gt $epoch_target ]
   then
-    if [ "$DISABLE_UPDATE_PROMPT" = "true" ]
+    if [[ "$update_mode" == "auto" ]]
     then
       (upgrade_oh_my_zsh_custom)
+    elif [[ "$update_mode" == "reminder" ]]
+    then
+      echo "[oh-my-zsh] It's time to update! You can do that by running \`upgrade_oh_my_zsh_custom\`"
     else
-      echo "[Oh My Zsh] Would you like to check for custom plugin updates? [Y/n]: \c"
+      echo "[oh-my-zsh] Would you like to check for custom plugin updates? [Y/n]: \c"
       read line
       if [[ "$line" == Y* ]] || [[ "$line" == y* ]] || [ -z "$line" ]
       then
@@ -99,4 +133,5 @@ else
   _update_zsh_custom_update
 fi
 
-unset -f _update_zsh_custom_update _current_epoch
+unset -f _update_zsh_custom_update _current_epoch \
+  _get_epoch_target _dispatch_update_mode
