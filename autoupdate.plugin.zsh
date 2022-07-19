@@ -26,16 +26,16 @@ function _update_zsh_custom_update() {
 }
 
 function _get_epoch_target() {
-	local epoch_target
+  local epoch_target
 
-	zstyle -g epoch_target ':omz:update' frequency \
-		|| epoch_target="$UPDATE_ZSH_DAYS"
-	if [[ -z "$epoch_target" ]]; then
-		# Default to old behavior
-		epoch_target=13
-	fi
+  zstyle -g epoch_target ':omz:update' frequency \
+    || epoch_target="$UPDATE_ZSH_DAYS"
+  if [[ -z "$epoch_target" ]]; then
+    # Default to old behavior
+    epoch_target=13
+  fi
 
-	echo "$epoch_target"
+  echo "$epoch_target"
 }
 
 epoch_target="$(_get_epoch_target)"
@@ -80,27 +80,27 @@ then
 fi
 
 function _dispatch_update_mode() {
-	local mode
+  local mode
 
-	zstyle -g mode ':omz:update' mode
-	if [[ -z "$mode" ]]; then
-		if [[ "$DISABLE_AUTO_UPDATE" == "true" ]]; then
-			mode="disabled"
-		elif [[ "$DISABLE_UPDATE_PROMPT" == "true" ]]; then
-			mode="auto"
-		else
-			mode="prompt"
-		fi
-	fi
+  zstyle -g mode ':omz:update' mode
+  if [[ -z "$mode" ]]; then
+    if [[ "$DISABLE_AUTO_UPDATE" == "true" ]]; then
+      mode="disabled"
+    elif [[ "$DISABLE_UPDATE_PROMPT" == "true" ]]; then
+      mode="auto"
+    else
+      mode="prompt"
+    fi
+  fi
 
-	echo "$mode"
+  echo "$mode"
 }
 
 update_mode="$(_dispatch_update_mode)"
 
 if [[ "$update_mode" == "disabled" ]]
 then
-	# No updates
+  # No updates
 elif [ -f "${ZSH_CACHE_DIR}/.zsh-custom-update" ]
 then
   . "${ZSH_CACHE_DIR}/.zsh-custom-update"
@@ -116,9 +116,9 @@ then
     if [[ "$update_mode" == "auto" ]]
     then
       (upgrade_oh_my_zsh_custom)
-		elif [[ "$update_mode" == "reminder" ]]
-		then
-			echo "[oh-my-zsh] It's time to update! You can do that by running \`upgrade_oh_my_zsh_custom\`"
+    elif [[ "$update_mode" == "reminder" ]]
+    then
+      echo "[oh-my-zsh] It's time to update! You can do that by running \`upgrade_oh_my_zsh_custom\`"
     else
       echo "[oh-my-zsh] Would you like to check for custom plugin updates? [Y/n]: \c"
       read line
@@ -134,4 +134,4 @@ else
 fi
 
 unset -f _update_zsh_custom_update _current_epoch \
-	_get_epoch_target _dispatch_update_mode
+  _get_epoch_target _dispatch_update_mode
