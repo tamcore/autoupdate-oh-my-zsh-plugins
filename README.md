@@ -31,7 +31,7 @@ export UPDATE_ZSH_DAYS=1
 Another possibility is to use the provided upgrade function, which one may call
 at any time using `upgrade_oh_my_zsh_custom`. There shouldn't be any difference
 with the automatic operation. Also, a convenient alias that calls the OhMyZsh
-update function `upgrade_oh_my_zsh` and then `upgrade_oh_my_zsh_custom`, called
+update function `omz update` and then `upgrade_oh_my_zsh_custom`, called
 `upgrade_oh_my_zsh_all`, is available as well.
 
 ### Quiet mode
