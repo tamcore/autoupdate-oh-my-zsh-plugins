@@ -15,8 +15,10 @@ git clone https://github.com/TamCore/autoupdate-oh-my-zsh-plugins $ZSH_CUSTOM/pl
 Add `autoupdate` to the `plugins=()` list in your `~/.zshrc` file and you're done.
 
 ```bash
-# Multiple plugins should be separated by space
 plugins=(autoupdate)
+
+# Multiple plugins should be separated by space character
+# plugins=(somePlugin autoupdate)
 ```
 
 The updates will be executed automatically as soon as the oh-my-zsh updater is started.
