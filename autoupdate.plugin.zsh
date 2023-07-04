@@ -69,12 +69,17 @@ function upgrade_oh_my_zsh_custom() {
     printf "${BLUE}%s${NORMAL}\n" "Upgrading Custom Plugins"
   fi
 
+  num_workers=$( printf "%.0f" "$ZSH_CUSTOM_AUTOUPDATE_NUM_WORKERS" )
   set +m
-  max_procs=8
   find -L "${ZSH_CUSTOM}" -type d -name .git | while read d
   do
-    ((i=(i+1)%max_procs)) || wait
-    (_upgrade_custom_plugin "${d}") &
+    if ! test $num_workers -gt 1 2> /dev/null || \
+    test $num_workers -gt 16 2> /dev/null; then
+      _upgrade_custom_plugin "${d}"
+    else
+      ((i=(i+1)%$num_workers)) || wait
+      (_upgrade_custom_plugin "${d}") &
+    fi
   done
   wait
   set -m
