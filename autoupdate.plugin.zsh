@@ -40,35 +40,49 @@ function _get_epoch_target() {
 
 epoch_target="$(_get_epoch_target)"
 
+function _upgrade_custom_plugin() {
+  p=$(dirname "$1")
+  pn=$(basename "$p")
+  pt=$(dirname "$p")
+  pt=$(basename ${pt:0:((${#pt} - 1))})
+  pushd -q "${p}"
+
+  last_head=$( git rev-parse HEAD )
+  if git pull --quiet --rebase --stat --autostash
+  then
+    curr_head=$( git rev-parse HEAD )
+    if [ "${last_head}" != "${curr_head}" ]
+    then
+      printf "${BLUE}%s${NORMAL}\n" "Hooray! the $pn $pt has been updated."
+    else
+      printf "${BLUE}%s${NORMAL}\n" "The $pn $pt was already at the latest version."
+    fi
+  else
+    printf "${RED}%s${NORMAL}\n" "There was an error updating the $pn $pt. Try again later?"
+  fi
+
+  popd &>/dev/null
+}
+
 function upgrade_oh_my_zsh_custom() {
   if [[ -z "$ZSH_CUSTOM_AUTOUPDATE_QUIET" ]]; then
     printf "${BLUE}%s${NORMAL}\n" "Upgrading Custom Plugins"
   fi
 
+  num_workers=$( printf "%.0f" "$ZSH_CUSTOM_AUTOUPDATE_NUM_WORKERS" )
+  set +m
   find -L "${ZSH_CUSTOM}" -type d -name .git | while read d
   do
-    p=$(dirname "$d")
-    pn=$(basename "$p")
-    pt=$(dirname "$p")
-    pt=$(basename ${pt:0:((${#pt} - 1))})
-    pushd -q "${p}"
-
-    last_head=$( git rev-parse HEAD )
-    if git pull --quiet --rebase --stat --autostash
-    then
-      curr_head=$( git rev-parse HEAD )
-      if [ "${last_head}" != "${curr_head}" ]
-      then
-        printf "${BLUE}%s${NORMAL}\n" "Hooray! the $pn $pt has been updated."
-      else
-        printf "${BLUE}%s${NORMAL}\n" "The $pn $pt was already at the latest version."
-      fi
+    if ! test $num_workers -gt 1 2> /dev/null || \
+    test $num_workers -gt 16 2> /dev/null; then
+      _upgrade_custom_plugin "${d}"
     else
-      printf "${RED}%s${NORMAL}\n" "There was an error updating the $pn $pt. Try again later?"
+      ((i=(i+1)%$num_workers)) || wait
+      (_upgrade_custom_plugin "${d}") &
     fi
-
-    popd &>/dev/null
   done
+  wait
+  set -m
 }
 
 alias upgrade_oh_my_zsh_all='omz update && upgrade_oh_my_zsh_custom'
