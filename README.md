@@ -21,18 +21,13 @@ plugins=(autoupdate)
 # plugins=(somePlugin autoupdate)
 ```
 
-The updates will be executed automatically as soon as the oh-my-zsh updater is started.
-Note that this will autoupdate both plugins and also themes found in the $ZSH_CUSTOM folder.
+By default this will auto update both plugins and themes, found in the $ZSH_CUSTOM folder, every 13 days (which is the OhMyZsh default).
 
-If you want to check for updates more often, you can adjust this line in the `~/.zshrc` file.
-Default command:
-```shell
-# Uncomment the following line to change how often to auto-update (in days).
-# export UPDATE_ZSH_DAYS=13
-```
-Changed command: (checks daily for updates)
-```shell
-# Uncomment the following line to change how often to auto-update (in days).
+If you want to check for updates more or less often, you can export the `UPDATE_ZSH_DAYS` variable in your `~/.zshrc` file:
+```bash
+# to check for updates once a month
+export UPDATE_ZSH_DAYS=30
+# or to check for updates daily
 export UPDATE_ZSH_DAYS=1
 ```
 
@@ -40,7 +35,7 @@ Another possibility is to use the provided upgrade function, which one may call
 at any time using `upgrade_oh_my_zsh_custom`. There shouldn't be any difference
 with the automatic operation. Also, a convenient alias that calls the OhMyZsh
 update function `omz update` and then `upgrade_oh_my_zsh_custom`, called
-`upgrade_oh_my_zsh_all`, is available as well.
+`upgrade_oh_my_zsh_all`, is available as well. However, running `omz update` directly **will not** trigger the this plugin.
 
 ### Quiet mode
 
