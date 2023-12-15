@@ -41,16 +41,18 @@ function _get_epoch_target() {
 epoch_target="$(_get_epoch_target)"
 
 function _upgrade_custom_plugin() {
-  p=$(dirname "$1")
+  # path of plugin/theme
+  p=$(dirname "$d")
+  # it's name
   pn=$(basename "$p")
+  # it's type (plugin/theme)
   pt=$(dirname "$p")
   pt=$(basename ${pt:0:((${#pt} - 1))})
-  pushd -q "${p}"
 
-  last_head=$( git rev-parse HEAD )
-  if git pull --quiet --rebase --stat --autostash
+  last_head=$( git -C "${p}" rev-parse HEAD )
+  if git -C "${p}" pull --quiet --rebase --stat --autostash
   then
-    curr_head=$( git rev-parse HEAD )
+    curr_head=$( git -C "${p}" rev-parse HEAD )
     if [ "${last_head}" != "${curr_head}" ]
     then
       printf "${BLUE}%s${NORMAL}\n" "Hooray! the $pn $pt has been updated."
@@ -60,8 +62,6 @@ function _upgrade_custom_plugin() {
   else
     printf "${RED}%s${NORMAL}\n" "There was an error updating the $pn $pt. Try again later?"
   fi
-
-  popd &>/dev/null
 }
 
 function upgrade_oh_my_zsh_custom() {
