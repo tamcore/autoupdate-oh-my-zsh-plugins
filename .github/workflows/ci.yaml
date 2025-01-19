@@ -19,3 +19,129 @@ jobs:
 
     - name: pre-commit
       uses: pre-commit/action@v3.0.1
+
+  ci-ubuntu:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Install zsh
+      shell: bash
+      run: sudo apt-get update && sudo apt-get -y install zsh
+
+    - name: Install oh-my-zsh
+      run: sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+
+    - name: Checkout plugin
+      uses: actions/checkout@v4
+      with:
+        path: autoupdate
+
+    - name: Checkout 3rd party plugin
+      uses: actions/checkout@v4
+      with:
+        repository: zsh-users/zsh-autosuggestions
+        path: zsh-autosuggestions
+        fetch-depth: 0
+
+    - name: Downgrade 3rd party plugin to old commit
+      shell: bash
+      run: |
+        git -C zsh-autosuggestions reset --hard 89c600c873a7e64b075c916850e80bfd62f81de9
+
+    - name: Move plugins to omz installation
+      shell: bash
+      run: |
+        mkdir -p ~/.oh-my-zsh/custom/plugins
+        mv -v autoupdate zsh-autosuggestions ~/.oh-my-zsh/custom/plugins
+
+    - name: Create .zshrc
+      shell: bash
+      run: |
+        cat > /home/runner/.zshrc << EOC
+        export ZSH="/home/runner/.oh-my-zsh"
+        ZSH_THEME="robbyrussell"
+        plugins=(autoupdate)
+
+        source /home/runner/.oh-my-zsh/oh-my-zsh.sh
+        EOC
+
+    - name: Run zsh
+      #shell: zsh -i {0}
+      shell: 'script -q -e -a /dev/null -c "zsh -i {0}"'
+      env:
+        TERM: xterm-256color
+      run: |
+        source /home/runner/.zshrc
+        upgrade_oh_my_zsh_custom
+
+    - name: Verify update
+      shell: bash
+      run: |
+        set -x
+        if [ `git -C /home/runner/.oh-my-zsh/custom/plugins/zsh-autosuggestions rev-parse HEAD` == "89c600c873a7e64b075c916850e80bfd62f81de9" ]
+        then
+          exit 1
+        else
+          exit 0
+        fi
+
+  ci-osx:
+    runs-on: macos-15
+
+    steps:
+    - name: Install oh-my-zsh
+      run: sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+
+    - name: Checkout plugin
+      uses: actions/checkout@v4
+      with:
+        path: autoupdate
+
+    - name: Checkout 3rd party plugin
+      uses: actions/checkout@v4
+      with:
+        repository: zsh-users/zsh-autosuggestions
+        path: zsh-autosuggestions
+        fetch-depth: 0
+
+    - name: Downgrade 3rd party plugin to old commit
+      shell: bash
+      run: |
+        git -C zsh-autosuggestions reset --hard 89c600c873a7e64b075c916850e80bfd62f81de9
+
+    - name: Move plugins to omz installation
+      shell: bash
+      run: |
+        mkdir -p ~/.oh-my-zsh/custom/plugins
+        mv -v autoupdate zsh-autosuggestions ~/.oh-my-zsh/custom/plugins
+
+    - name: Create .zshrc
+      shell: bash
+      run: |
+        cat > /Users/runner/.zshrc << EOC
+        export ZSH="/Users/runner/.oh-my-zsh"
+        ZSH_THEME="robbyrussell"
+        plugins=(autoupdate)
+
+        source /Users/runner/.oh-my-zsh/oh-my-zsh.sh
+        EOC
+
+    - name: Run zsh
+      #shell: zsh -i {0}
+      shell: 'script -q -e -a /dev/null /bin/zsh {0}'
+      env:
+        TERM: xterm-256color
+      run: |
+        source /Users/runner/.zshrc
+        upgrade_oh_my_zsh_custom
+
+    - name: Verify update
+      shell: bash
+      run: |
+        set -x
+        if [ `git -C /Users/runner/.oh-my-zsh/custom/plugins/zsh-autosuggestions rev-parse HEAD` == "89c600c873a7e64b075c916850e80bfd62f81de9" ]
+        then
+          exit 1
+        else
+          exit 0
+        fi
