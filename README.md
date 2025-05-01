@@ -54,3 +54,11 @@ To speed up updates by setting maximum number of parallel downloads, add this to
 # Parallel downloads will not be enabled if value is out-of-range
 ZSH_CUSTOM_AUTOUPDATE_NUM_WORKERS=8
 ```
+
+### Ignore Plugin List
+
+To prevent some plugins from update, add this to your `~/.zshrc` file:
+```shell
+# support ',' ';' ':' as the split char
+ZSH_CUSTOM_AUTOUPDATE_IGNORE="zsh-autosuggestions, autoupdate; zsh-autosuggestions"
+```

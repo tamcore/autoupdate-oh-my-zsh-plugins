@@ -51,6 +51,16 @@ function _upgrade_custom_plugin() {
   pt=$(dirname "$p")
   pt=$(basename ${pt:0:((${#pt} - 1))})
 
+  # Check if plugin should be ignored
+  if [[ -n "$ZSH_CUSTOM_AUTOUPDATE_IGNORE" ]]; then
+    echo "$ZSH_CUSTOM_AUTOUPDATE_IGNORE" | tr ',;: ' '\n' | grep -v '^$' | while read ignored; do
+      if [[ "$pn" == "$ignored" ]]; then
+        printf "${BLUE}%s${NORMAL}\n" "Skipping $pn $pt (in ignore list)"
+        return 0
+      fi
+    done
+  fi
+
   last_head=$( git -C "${p}" rev-parse HEAD )
   if git -C "${p}" pull --quiet --rebase --stat --autostash
   then
