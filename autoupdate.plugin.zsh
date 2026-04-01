@@ -12,7 +12,6 @@ if [[ $- == *i* ]] && [ -n "$ncolors" ] && [ "$ncolors" -ge 8 ]; then
   NORMAL="$(tput sgr0)"
 else
   BLUE=""
-  BOLD=""
   GREEN=""
   NORMAL=""
 fi
@@ -73,10 +72,10 @@ function upgrade_oh_my_zsh_custom() {
 
   num_workers=$( printf "%.0f" "$ZSH_CUSTOM_AUTOUPDATE_NUM_WORKERS" )
   set +m
-  find -L "${ZSH_CUSTOM}" -name .git | while read d
+  find -L "${ZSH_CUSTOM}" -name .git | while IFS= read -r d
   do
-    if ! test $num_workers -gt 1 2> /dev/null || \
-    test $num_workers -gt 16 2> /dev/null; then
+    if ! test "$num_workers" -gt 1 2> /dev/null || \
+    test "$num_workers" -gt 16 2> /dev/null; then
       _upgrade_custom_plugin "${d}"
     else
       ((i=(i+1)%$num_workers)) || wait
@@ -116,7 +115,7 @@ update_mode="$(_dispatch_update_mode)"
 
 if [[ "$update_mode" == "disabled" ]]
 then
-  # No updates
+  : # No updates
 elif [ -f "${ZSH_CACHE_DIR}/.zsh-custom-update" ]
 then
   . "${ZSH_CACHE_DIR}/.zsh-custom-update"
@@ -127,7 +126,7 @@ then
   fi
 
   epoch_diff=$(($(_current_epoch) - $LAST_EPOCH))
-  if [ $epoch_diff -gt $epoch_target ]
+  if [ "$epoch_diff" -gt "$epoch_target" ]
   then
     if [[ "$update_mode" == "auto" ]]
     then

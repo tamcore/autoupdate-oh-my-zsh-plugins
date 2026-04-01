@@ -15,3 +15,12 @@ repos:
     - id: forbid-tabs
     - id: remove-tabs
       args: [--whitespaces-count, '2']
+
+- repo: https://github.com/shellcheck-py/shellcheck-py
+  rev: v0.10.0.1
+  hooks:
+    - id: shellcheck
+      # .zsh files have no shebang; treat as bash for analysis. SC2059 is
+      # intentionally disabled: color escape codes in printf format strings
+      # are valid and deliberate throughout this plugin.
+      args: ['--shell=bash', '--severity=warning', '--exclude=SC2059']
