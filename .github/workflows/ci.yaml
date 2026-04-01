@@ -1,147 +1,190 @@
 name: CI
 
 on:
+  workflow_dispatch:
   pull_request:
+    paths-ignore:
+      - '**.md'
+      - LICENSE
   push:
+    branches: [master]
+    paths-ignore:
+      - '**.md'
+      - LICENSE
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   pre-commit:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-    - name: Setup Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: 3.x
+      - name: Setup Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: 3.x
 
-    - name: pre-commit
-      uses: pre-commit/action@v3.0.1
+      - name: Run pre-commit hooks
+        uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd # v3.0.1
 
-  ci-ubuntu:
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Install zsh
-      shell: bash
-      run: sudo apt-get update && sudo apt-get -y install zsh
-
-    - name: Install oh-my-zsh
-      run: sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
-
-    - name: Checkout plugin
-      uses: actions/checkout@v4
-      with:
-        path: autoupdate
-
-    - name: Checkout 3rd party plugin
-      uses: actions/checkout@v4
-      with:
-        repository: zsh-users/zsh-autosuggestions
-        path: zsh-autosuggestions
-        fetch-depth: 0
-
-    - name: Downgrade 3rd party plugin to old commit
-      shell: bash
-      run: |
-        git -C zsh-autosuggestions reset --hard 89c600c873a7e64b075c916850e80bfd62f81de9
-
-    - name: Move plugins to omz installation
-      shell: bash
-      run: |
-        mkdir -p ~/.oh-my-zsh/custom/plugins
-        mv -v autoupdate zsh-autosuggestions ~/.oh-my-zsh/custom/plugins
-
-    - name: Create .zshrc
-      shell: bash
-      run: |
-        cat > /home/runner/.zshrc << EOC
-        export ZSH="/home/runner/.oh-my-zsh"
-        ZSH_THEME="robbyrussell"
-        plugins=(autoupdate)
-
-        source /home/runner/.oh-my-zsh/oh-my-zsh.sh
-        EOC
-
-    - name: Run zsh
-      #shell: zsh -i {0}
-      shell: 'script -q -e -a /dev/null -c "zsh -i {0}"'
-      env:
-        TERM: xterm-256color
-      run: |
-        source /home/runner/.zshrc
-        upgrade_oh_my_zsh_custom
-
-    - name: Verify update
-      shell: bash
-      run: |
-        set -x
-        if [ `git -C /home/runner/.oh-my-zsh/custom/plugins/zsh-autosuggestions rev-parse HEAD` == "89c600c873a7e64b075c916850e80bfd62f81de9" ]
-        then
-          exit 1
-        else
-          exit 0
-        fi
-
-  ci-osx:
-    runs-on: macos-15
+  ci:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-15]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
 
     steps:
-    - name: Install oh-my-zsh
-      run: sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+      - name: Install zsh
+        if: runner.os == 'Linux'
+        shell: bash
+        run: sudo apt-get update && sudo apt-get -y install zsh
 
-    - name: Checkout plugin
-      uses: actions/checkout@v4
-      with:
-        path: autoupdate
+      - name: Create zsh runner
+        shell: bash
+        run: |
+          cat > /usr/local/bin/zsh-runner << 'EOF'
+          #!/bin/bash
+          # Runs a script in an interactive zsh with a pseudo-TTY.
+          # Linux script(1) uses -c; macOS script(1) takes a positional command.
+          if [ "$(uname)" = "Darwin" ]; then
+            exec script -q -e -a /dev/null /bin/zsh "$1"
+          else
+            exec script -q -e -a /dev/null -c "zsh -i $1"
+          fi
+          EOF
+          chmod +x /usr/local/bin/zsh-runner
 
-    - name: Checkout 3rd party plugin
-      uses: actions/checkout@v4
-      with:
-        repository: zsh-users/zsh-autosuggestions
-        path: zsh-autosuggestions
-        fetch-depth: 0
+      - name: Install oh-my-zsh
+        run: sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
 
-    - name: Downgrade 3rd party plugin to old commit
-      shell: bash
-      run: |
-        git -C zsh-autosuggestions reset --hard 89c600c873a7e64b075c916850e80bfd62f81de9
+      - name: Checkout plugin
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          path: autoupdate
 
-    - name: Move plugins to omz installation
-      shell: bash
-      run: |
-        mkdir -p ~/.oh-my-zsh/custom/plugins
-        mv -v autoupdate zsh-autosuggestions ~/.oh-my-zsh/custom/plugins
+      - name: Checkout zsh-autosuggestions
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          repository: zsh-users/zsh-autosuggestions
+          path: zsh-autosuggestions
+          fetch-depth: 0
 
-    - name: Create .zshrc
-      shell: bash
-      run: |
-        cat > /Users/runner/.zshrc << EOC
-        export ZSH="/Users/runner/.oh-my-zsh"
-        ZSH_THEME="robbyrussell"
-        plugins=(autoupdate)
+      - name: Checkout zsh-syntax-highlighting
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          repository: zsh-users/zsh-syntax-highlighting
+          path: zsh-syntax-highlighting
+          fetch-depth: 0
 
-        source /Users/runner/.oh-my-zsh/oh-my-zsh.sh
-        EOC
+      - name: Downgrade plugins to old commits
+        shell: bash
+        run: |
+          git -C zsh-autosuggestions reset --hard 89c600c873a7e64b075c916850e80bfd62f81de9
+          ZSH_SYNTAX_OLD=$(git -C zsh-syntax-highlighting rev-list HEAD~50 -n1)
+          git -C zsh-syntax-highlighting reset --hard "$ZSH_SYNTAX_OLD"
+          echo "ZSH_SYNTAX_OLD_SHA=$ZSH_SYNTAX_OLD" >> "$GITHUB_ENV"
 
-    - name: Run zsh
-      #shell: zsh -i {0}
-      shell: 'script -q -e -a /dev/null /bin/zsh {0}'
-      env:
-        TERM: xterm-256color
-      run: |
-        source /Users/runner/.zshrc
-        upgrade_oh_my_zsh_custom
+      - name: Move plugins to oh-my-zsh custom directory
+        shell: bash
+        run: |
+          mkdir -p "$HOME/.oh-my-zsh/custom/plugins"
+          mv -v autoupdate zsh-autosuggestions zsh-syntax-highlighting "$HOME/.oh-my-zsh/custom/plugins"
 
-    - name: Verify update
-      shell: bash
-      run: |
-        set -x
-        if [ `git -C /Users/runner/.oh-my-zsh/custom/plugins/zsh-autosuggestions rev-parse HEAD` == "89c600c873a7e64b075c916850e80bfd62f81de9" ]
-        then
-          exit 1
-        else
-          exit 0
-        fi
+      - name: Create .zshrc
+        shell: bash
+        run: |
+          cat > "$HOME/.zshrc" << EOC
+          export ZSH="$HOME/.oh-my-zsh"
+          ZSH_THEME="robbyrussell"
+          plugins=(autoupdate)
+
+          source $HOME/.oh-my-zsh/oh-my-zsh.sh
+          EOC
+
+      - name: Test basic plugin update
+        shell: zsh-runner {0}
+        env:
+          TERM: xterm-256color
+        run: |
+          source "$HOME/.zshrc"
+          upgrade_oh_my_zsh_custom
+
+      - name: Verify both plugins were updated
+        shell: bash
+        run: |
+          set -x
+          AUTOSUGGESTIONS_HEAD=$(git -C "$HOME/.oh-my-zsh/custom/plugins/zsh-autosuggestions" rev-parse HEAD)
+          SYNTAX_HEAD=$(git -C "$HOME/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting" rev-parse HEAD)
+          if [ "$AUTOSUGGESTIONS_HEAD" = "89c600c873a7e64b075c916850e80bfd62f81de9" ]; then
+            echo "ERROR: zsh-autosuggestions was not updated"
+            exit 1
+          fi
+          if [ "$SYNTAX_HEAD" = "$ZSH_SYNTAX_OLD_SHA" ]; then
+            echo "ERROR: zsh-syntax-highlighting was not updated"
+            exit 1
+          fi
+          echo "Both plugins updated successfully"
+
+      - name: Re-downgrade plugins for quiet mode test
+        shell: bash
+        run: |
+          git -C "$HOME/.oh-my-zsh/custom/plugins/zsh-autosuggestions" reset --hard 89c600c873a7e64b075c916850e80bfd62f81de9
+          git -C "$HOME/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting" reset --hard "$ZSH_SYNTAX_OLD_SHA"
+
+      - name: Test quiet mode
+        shell: zsh-runner {0}
+        env:
+          TERM: xterm-256color
+          ZSH_CUSTOM_AUTOUPDATE_QUIET: "true"
+        run: |
+          source "$HOME/.zshrc"
+          upgrade_oh_my_zsh_custom > /tmp/quiet_output.txt 2>&1
+
+      - name: Verify quiet mode suppresses output
+        shell: bash
+        run: |
+          if grep -q "Upgrading Custom Plugins" /tmp/quiet_output.txt; then
+            echo "ERROR: Quiet mode should suppress the upgrade banner"
+            cat /tmp/quiet_output.txt
+            exit 1
+          fi
+          echo "Quiet mode test passed"
+
+      - name: Re-downgrade plugins for parallel workers test
+        shell: bash
+        run: |
+          git -C "$HOME/.oh-my-zsh/custom/plugins/zsh-autosuggestions" reset --hard 89c600c873a7e64b075c916850e80bfd62f81de9
+          git -C "$HOME/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting" reset --hard "$ZSH_SYNTAX_OLD_SHA"
+
+      - name: Test parallel workers
+        shell: zsh-runner {0}
+        env:
+          TERM: xterm-256color
+          ZSH_CUSTOM_AUTOUPDATE_NUM_WORKERS: "2"
+        run: |
+          source "$HOME/.zshrc"
+          upgrade_oh_my_zsh_custom
+
+      - name: Verify parallel update
+        shell: bash
+        run: |
+          set -x
+          AUTOSUGGESTIONS_HEAD=$(git -C "$HOME/.oh-my-zsh/custom/plugins/zsh-autosuggestions" rev-parse HEAD)
+          SYNTAX_HEAD=$(git -C "$HOME/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting" rev-parse HEAD)
+          if [ "$AUTOSUGGESTIONS_HEAD" = "89c600c873a7e64b075c916850e80bfd62f81de9" ]; then
+            echo "ERROR: zsh-autosuggestions was not updated in parallel mode"
+            exit 1
+          fi
+          if [ "$SYNTAX_HEAD" = "$ZSH_SYNTAX_OLD_SHA" ]; then
+            echo "ERROR: zsh-syntax-highlighting was not updated in parallel mode"
+            exit 1
+          fi
+          echo "Parallel workers test passed"
