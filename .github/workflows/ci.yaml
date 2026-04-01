@@ -188,3 +188,34 @@ jobs:
             exit 1
           fi
           echo "Parallel workers test passed"
+
+      - name: Re-downgrade plugins for ignore list test
+        shell: bash
+        run: |
+          git -C "$HOME/.oh-my-zsh/custom/plugins/zsh-autosuggestions" reset --hard 89c600c873a7e64b075c916850e80bfd62f81de9
+          git -C "$HOME/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting" reset --hard "$ZSH_SYNTAX_OLD_SHA"
+
+      - name: Test ignore list
+        shell: zsh-runner {0}
+        env:
+          TERM: xterm-256color
+          ZSH_CUSTOM_AUTOUPDATE_IGNORE: "zsh-autosuggestions"
+        run: |
+          source "$HOME/.zshrc"
+          upgrade_oh_my_zsh_custom
+
+      - name: Verify ignored plugin was skipped
+        shell: bash
+        run: |
+          set -x
+          AUTOSUGGESTIONS_HEAD=$(git -C "$HOME/.oh-my-zsh/custom/plugins/zsh-autosuggestions" rev-parse HEAD)
+          SYNTAX_HEAD=$(git -C "$HOME/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting" rev-parse HEAD)
+          if [ "$AUTOSUGGESTIONS_HEAD" != "89c600c873a7e64b075c916850e80bfd62f81de9" ]; then
+            echo "ERROR: zsh-autosuggestions should have been skipped but was updated"
+            exit 1
+          fi
+          if [ "$SYNTAX_HEAD" = "$ZSH_SYNTAX_OLD_SHA" ]; then
+            echo "ERROR: zsh-syntax-highlighting should have been updated"
+            exit 1
+          fi
+          echo "Ignore list test passed"
