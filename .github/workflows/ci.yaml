@@ -106,6 +106,10 @@ jobs:
           ZSH_THEME="robbyrussell"
           plugins=(autoupdate)
 
+          # Always ignore the autoupdate plugin itself (detached HEAD in CI).
+          # Append to any ignore list already set by the test step env var.
+          export ZSH_CUSTOM_AUTOUPDATE_IGNORE="\${ZSH_CUSTOM_AUTOUPDATE_IGNORE:+\${ZSH_CUSTOM_AUTOUPDATE_IGNORE} }autoupdate"
+
           source $HOME/.oh-my-zsh/oh-my-zsh.sh
           EOC
 
@@ -219,3 +223,44 @@ jobs:
             exit 1
           fi
           echo "Ignore list test passed"
+
+      - name: Re-downgrade plugins and create nested repo for nested git test
+        shell: bash
+        run: |
+          git -C "$HOME/.oh-my-zsh/custom/plugins/zsh-autosuggestions" reset --hard 89c600c873a7e64b075c916850e80bfd62f81de9
+          git -C "$HOME/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting" reset --hard "$ZSH_SYNTAX_OLD_SHA"
+          NESTED="$HOME/.oh-my-zsh/custom/plugins/zsh-autosuggestions/test-nested-dep"
+          git init "$NESTED"
+          git -C "$NESTED" -c user.email="ci@test" -c user.name="CI" commit --allow-empty -m "initial"
+          NESTED_SHA=$(git -C "$NESTED" rev-parse HEAD)
+          git -C "$NESTED" checkout --detach HEAD
+          echo "NESTED_SHA=$NESTED_SHA" >> "$GITHUB_ENV"
+
+      - name: Test nested git directories are ignored
+        shell: zsh-runner {0}
+        env:
+          TERM: xterm-256color
+        run: |
+          source "$HOME/.zshrc"
+          upgrade_oh_my_zsh_custom
+
+      - name: Verify nested git test
+        shell: bash
+        run: |
+          set -x
+          AUTOSUGGESTIONS_HEAD=$(git -C "$HOME/.oh-my-zsh/custom/plugins/zsh-autosuggestions" rev-parse HEAD)
+          SYNTAX_HEAD=$(git -C "$HOME/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting" rev-parse HEAD)
+          NESTED_HEAD=$(git -C "$HOME/.oh-my-zsh/custom/plugins/zsh-autosuggestions/test-nested-dep" rev-parse HEAD)
+          if [ "$AUTOSUGGESTIONS_HEAD" = "89c600c873a7e64b075c916850e80bfd62f81de9" ]; then
+            echo "ERROR: zsh-autosuggestions was not updated"
+            exit 1
+          fi
+          if [ "$SYNTAX_HEAD" = "$ZSH_SYNTAX_OLD_SHA" ]; then
+            echo "ERROR: zsh-syntax-highlighting was not updated"
+            exit 1
+          fi
+          if [ "$NESTED_HEAD" != "$NESTED_SHA" ]; then
+            echo "ERROR: nested repo should not have been touched"
+            exit 1
+          fi
+          echo "Nested git test passed"
